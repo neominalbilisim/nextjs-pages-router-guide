@@ -104,6 +104,12 @@ export default function Home() {
 				<title>Next.js Pages Router Playground</title>
 			</Head>
 
+			<p className="mb-6 text-sm leading-relaxed text-text-dim">
+				Bu uygulama Neominal Akademi tarafından canlı oturumlar için
+				geliştirilmiş, sektör standartlarına göre hazırlanan uçtan uca bir
+				mühendislik uygulamasıdır.
+			</p>
+
 			<section className="border-b border-border pb-10">
 				<span className="inline-flex items-center gap-1.5 rounded-full border border-accent/25 bg-accent/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-accent">
 					<span className="h-1.5 w-1.5 rounded-full bg-accent" />
