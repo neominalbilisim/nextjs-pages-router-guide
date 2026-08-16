@@ -1,53 +1,108 @@
 import Link from 'next/link';
 import { useRouter } from 'next/router';
+import { useEffect, useRef, useState } from 'react';
 
-const LINKS: { href: string; label: string }[] = [
-	{ href: '/', label: 'Ana Sayfa' },
-	{ href: '/about', label: 'About' },
-	{ href: '/blog', label: 'Blog (SSG)' },
-	{ href: '/dashboard', label: 'Dashboard (SSR)' },
-	{ href: '/users', label: 'Users (gerçek API)' },
-	{ href: '/layouts-demo', label: 'Layouts' },
-	{ href: '/hooks-demo', label: 'Custom Hook' },
-	{ href: '/state-demo', label: 'Zustand vs Context' },
-	{ href: '/dynamic-imports', label: 'Dynamic Import' },
-	{ href: '/error-boundary-demo', label: 'Error Boundary' },
-	{ href: '/error-page-demo', label: '_error.tsx' },
-	{ href: '/navigation', label: 'Navigation' },
-	{ href: '/performance', label: 'Performance' },
-	{ href: '/seo-demo', label: 'SEO' },
-	{ href: '/docs/getting-started/install', label: 'Catch-all' },
-	{ href: '/shop', label: 'Optional Catch-all' },
-];
+interface SessionUser {
+	name: string;
+	email: string;
+}
 
 export default function Navbar() {
 	const router = useRouter();
+	const [user, setUser] = useState<SessionUser | null>(null);
+	const [menuOpen, setMenuOpen] = useState(false);
+	const menuRef = useRef<HTMLDivElement>(null);
+
+	// /api/me httpOnly çerezi server tarafında okuyup çözümlüyor; Navbar
+	// _app.tsx içinde yaşadığı ve sayfa geçişlerinde remount olmadığı için
+	// oturum bilgisini her route değişiminde tazeliyoruz (login/logout sonrası
+	// yönlendirme de bir route change'dir).
+	useEffect(() => {
+		let cancelled = false;
+
+		async function loadUser() {
+			const res = await fetch('/api/me');
+			const body = await res.json();
+			if (!cancelled) setUser(body.ok ? body.user : null);
+		}
+
+		loadUser();
+		router.events.on('routeChangeComplete', loadUser);
+		return () => {
+			cancelled = true;
+			router.events.off('routeChangeComplete', loadUser);
+		};
+	}, [router.events]);
+
+	useEffect(() => {
+		if (!menuOpen) return;
+
+		function handleClickOutside(event: MouseEvent) {
+			if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+				setMenuOpen(false);
+			}
+		}
+
+		document.addEventListener('mousedown', handleClickOutside);
+		return () => document.removeEventListener('mousedown', handleClickOutside);
+	}, [menuOpen]);
+
+	async function handleLogout() {
+		await fetch('/api/logout', { method: 'POST' });
+		setUser(null);
+		setMenuOpen(false);
+		router.push('/');
+	}
 
 	return (
-		<header className="site-header">
-			<div className="site-header-inner">
-				<Link href="/" className="brand">
+		<header className="sticky top-0 z-20 border-b border-border bg-bg-elevated/80 backdrop-blur-md">
+			<div className="mx-auto flex max-w-5xl items-center justify-between gap-6 px-6 py-3.5">
+				<Link
+					href="/"
+					className="whitespace-nowrap bg-linear-to-r from-accent to-accent-strong bg-clip-text text-[15px] font-bold tracking-tight text-transparent no-underline transition-opacity hover:opacity-80"
+				>
 					📘 Pages Router Playground
 				</Link>
-				<nav className="nav-links">
-					{LINKS.map((link) => {
-						const isActive =
-							link.href === '/'
-								? router.pathname === '/'
-								: router.asPath.startsWith(
-										link.href.split('?')[0].split('/').slice(0, 2).join('/'),
-									);
-						return (
-							<Link
-								key={link.href}
-								href={link.href}
-								className={isActive ? 'active' : undefined}
-							>
-								{link.label}
-							</Link>
-						);
-					})}
-				</nav>
+
+				{user ? (
+					<div ref={menuRef} className="relative">
+						<button
+							type="button"
+							onClick={() => setMenuOpen((open) => !open)}
+							className="flex items-center gap-2 rounded-full border border-border bg-bg-card py-1.5 pl-1.5 pr-3 text-[13px] font-medium text-text transition-colors hover:border-accent/40"
+						>
+							<span className="flex h-6 w-6 items-center justify-center rounded-full bg-accent/15 text-[11px] font-bold text-accent">
+								{user.name.slice(0, 1).toUpperCase()}
+							</span>
+							{user.name}
+							<span className="text-text-dim">▾</span>
+						</button>
+
+						{menuOpen && (
+							<div className="absolute right-0 top-[calc(100%+8px)] w-56 rounded-lg border border-border bg-bg-card p-1.5 shadow-lg shadow-black/30">
+								<div className="px-2.5 py-2 text-[13px]">
+									<div className="font-semibold text-text">{user.name}</div>
+									<div className="truncate text-text-dim">{user.email}</div>
+								</div>
+								<div className="my-1 h-px bg-border" />
+								<button
+									type="button"
+									onClick={handleLogout}
+									className="w-full rounded-md px-2.5 py-2 text-left text-[13px] text-danger transition-colors hover:bg-danger-bg"
+								>
+									Çıkış yap
+								</button>
+							</div>
+						)}
+					</div>
+				) : (
+					<Link
+						href="/login"
+						className="rounded-md border border-border px-3 py-1.5 text-[13px] font-medium text-text-dim no-underline transition-colors hover:border-accent/40 hover:text-text"
+					>
+						Giriş yap
+					</Link>
+				)}
 			</div>
 		</header>
 	);

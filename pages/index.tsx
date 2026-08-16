@@ -74,6 +74,29 @@ const ROUTES: { path: string; label: string; desc: string }[] = [
 	},
 ];
 
+const API_ROUTES: { method: string; path: string; desc: string }[] = [
+	{
+		method: 'GET/POST',
+		path: '/api/hello',
+		desc: 'Basit API route örneği - method kontrolü ile.',
+	},
+	{
+		method: 'GET',
+		path: '/api/users/:id',
+		desc: 'Dynamic API route (pages/api/users/[id].ts).',
+	},
+	{
+		method: 'GET',
+		path: '/api/users',
+		desc: "pages/api/users/index.ts — sunucu tarafında https://jsonplaceholder.typicode.com/users'a fetch atıp gerçek API verisini döndürür. /users sayfası bu endpoint'i client'tan çağırıyor.",
+	},
+	{
+		method: 'POST',
+		path: '/api/login, /api/logout',
+		desc: '/dashboard sayfasındaki SSR auth demosu için cookie set/clear eder.',
+	},
+];
+
 export default function Home() {
 	return (
 		<div>
@@ -81,58 +104,74 @@ export default function Home() {
 				<title>Next.js Pages Router Playground</title>
 			</Head>
 
-			<span className="badge">Standalone demo</span>
-			<h1>Next.js Pages Router Playground</h1>
-			<p className="lede">
-				01-NEXTJS-PAGES-ROUTER-GUIDE.md dökümanındaki her case&apos;in çalışan
-				bir örneği bu projede. Aşağıdaki listeden istediğin case&apos;e gidip
-				kodunu (dosya yolu route ile birebir eşleşiyor) okuyabilir, etkileşimli
-				demoları deneyebilirsin.
-			</p>
+			<section className="border-b border-border pb-10">
+				<span className="inline-flex items-center gap-1.5 rounded-full border border-accent/25 bg-accent/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-accent">
+					<span className="h-1.5 w-1.5 rounded-full bg-accent" />
+					Standalone demo
+				</span>
+				<h1 className="mt-4 bg-linear-to-r from-text to-text-dim bg-clip-text text-4xl font-extrabold tracking-tight text-transparent sm:text-5xl">
+					Next.js Pages Router Playground
+				</h1>
+				<p className="mt-3 max-w-2xl text-[15px] leading-relaxed text-text-dim">
+					01-NEXTJS-PAGES-ROUTER-GUIDE.md dökümanındaki her case&apos;in çalışan
+					bir örneği bu projede. Aşağıdaki listeden istediğin case&apos;e gidip
+					kodunu (dosya yolu route ile birebir eşleşiyor) okuyabilir, etkileşimli
+					demoları deneyebilirsin.
+				</p>
+			</section>
 
-			<h2>Tüm case&apos;ler</h2>
-			<ul className="route-list">
-				{ROUTES.map((r) => (
-					<li key={r.path}>
-						<Link href={r.path} style={{ fontWeight: 600 }}>
-							{r.label}
-						</Link>
-						<div className="path">{r.path}</div>
-						<div className="desc">{r.desc}</div>
-					</li>
-				))}
-			</ul>
+			<section className="mt-10">
+				<h2 className="text-xs font-semibold uppercase tracking-wider text-text-dim">
+					Tüm case&apos;ler
+				</h2>
+				<ul className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
+					{ROUTES.map((r) => (
+						<li key={r.path}>
+							<Link
+								href={r.path}
+								className="group block h-full rounded-xl border border-border bg-bg-card p-4 no-underline transition-all hover:-translate-y-0.5 hover:border-accent/40 hover:shadow-lg hover:shadow-black/20"
+							>
+								<div className="flex items-start justify-between gap-3">
+									<span className="font-semibold text-text group-hover:text-accent">
+										{r.label}
+									</span>
+									<span className="mt-0.5 text-text-dim transition-transform group-hover:translate-x-0.5 group-hover:text-accent">
+										→
+									</span>
+								</div>
+								<div className="mt-1.5 font-mono text-[11px] text-accent">
+									{r.path}
+								</div>
+								<div className="mt-1.5 text-[13px] text-text-dim">{r.desc}</div>
+							</Link>
+						</li>
+					))}
+				</ul>
+			</section>
 
-			<h2>API Routes</h2>
-			<ul className="route-list">
-				<li>
-					<span style={{ fontWeight: 600 }}>GET/POST /api/hello</span>
-					<div className="desc">
-						Basit API route örneği - method kontrolü ile.
-					</div>
-				</li>
-				<li>
-					<span style={{ fontWeight: 600 }}>GET /api/users/:id</span>
-					<div className="desc">
-						Dynamic API route (pages/api/users/[id].ts).
-					</div>
-				</li>
-				<li>
-					<span style={{ fontWeight: 600 }}>GET /api/users</span>
-					<div className="desc">
-						pages/api/users/index.ts — sunucu tarafında
-						https://jsonplaceholder.typicode.com/users&apos;a fetch atıp
-						gerçek API verisini döndürür. /users sayfası bu endpoint&apos;i
-						client&apos;tan çağırıyor.
-					</div>
-				</li>
-				<li>
-					<span style={{ fontWeight: 600 }}>POST /api/login, /api/logout</span>
-					<div className="desc">
-						/dashboard sayfasındaki SSR auth demosu için cookie set/clear eder.
-					</div>
-				</li>
-			</ul>
+			<section className="mt-12">
+				<h2 className="text-xs font-semibold uppercase tracking-wider text-text-dim">
+					API Routes
+				</h2>
+				<ul className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
+					{API_ROUTES.map((r) => (
+						<li
+							key={r.path}
+							className="rounded-xl border border-border bg-bg-card p-4"
+						>
+							<div className="flex flex-wrap items-center gap-2">
+								<span className="rounded-md bg-info-bg px-1.5 py-0.5 font-mono text-[11px] font-semibold text-info">
+									{r.method}
+								</span>
+								<span className="font-mono text-[13px] font-semibold text-text">
+									{r.path}
+								</span>
+							</div>
+							<div className="mt-1.5 text-[13px] text-text-dim">{r.desc}</div>
+						</li>
+					))}
+				</ul>
+			</section>
 		</div>
 	);
 }

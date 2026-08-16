@@ -32,7 +32,7 @@ export default function MyApp({ Component, pageProps }: AppPropsWithLayout) {
 	const getLayout = Component.getLayout ?? ((page) => page);
 
 	return (
-		<div className="layout-shell">
+		<div className="flex min-h-screen flex-col">
 			<Navbar />
 			{/*
         Global Error Boundary: _app.tsx seviyesinde tek bir boundary
@@ -40,7 +40,7 @@ export default function MyApp({ Component, pageProps }: AppPropsWithLayout) {
         standalone olduğu için sayfa bazlı hata yönetişimi daha basit ve
         öngörülebilir şekilde tutulur.
       */}
-			<main className="site-main">
+			<main className="mx-auto w-full max-w-5xl flex-1 px-6 py-10 md:py-16">
 				<ErrorBoundary>{getLayout(<Component {...pageProps} />)}</ErrorBoundary>
 			</main>
 			<Footer />

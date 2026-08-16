@@ -51,6 +51,7 @@ npm run start
 | API Routes (basit + method kontrolü)                                 | `/api/hello`               | `pages/api/hello.ts`                                                     |
 | API Routes (dynamic)                                                 | `/api/users/[id]`          | `pages/api/users/[id].ts`                                                |
 | API Routes (gerçek dış API'den veri çekme)                           | `/users`, `/api/users`     | `pages/users/index.tsx`, `pages/api/users/index.ts`                      |
+| Styling: Tailwind CSS entegrasyonu                                   | `/` (Navbar/Footer dahil)  | `postcss.config.mjs`, `styles/globals.css` — bkz. `TAILWIND-CSS-GUIDE.md` |
 
 ## Notlar
 
