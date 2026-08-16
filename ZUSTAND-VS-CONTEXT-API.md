@@ -176,6 +176,7 @@ Aynı sepet state'i, Zustand ile:
 ```typescript
 // store/useCartStore.ts
 import { create } from "zustand";
+import { devtools } from "zustand/middleware";
 
 interface CartItem {
   id: string;
@@ -190,25 +191,45 @@ interface CartStore {
   clear: () => void;
 }
 
-export const useCartStore = create<CartStore>((set) => ({
-  items: [],
-  addItem: (item) =>
-    set((state) => {
-      const existing = state.items.find((i) => i.id === item.id);
-      if (existing) {
-        return {
-          items: state.items.map((i) =>
-            i.id === item.id ? { ...i, qty: i.qty + 1 } : i
-          ),
-        };
-      }
-      return { items: [...state.items, item] };
+export const useCartStore = create<CartStore>()(
+  devtools(
+    (set) => ({
+      items: [],
+      addItem: (item) =>
+        set((state) => {
+          const existing = state.items.find((i) => i.id === item.id);
+          if (existing) {
+            return {
+              items: state.items.map((i) =>
+                i.id === item.id ? { ...i, qty: i.qty + 1 } : i
+              ),
+            };
+          }
+          return { items: [...state.items, item] };
+        }, false, "addItem"),
+      removeItem: (id) =>
+        set(
+          (state) => ({ items: state.items.filter((i) => i.id !== id) }),
+          false,
+          "removeItem"
+        ),
+      clear: () => set({ items: [] }, false, "clear"),
     }),
-  removeItem: (id) =>
-    set((state) => ({ items: state.items.filter((i) => i.id !== id) })),
-  clear: () => set({ items: [] }),
-}));
+    { name: "CartStore" }
+  )
+);
 ```
+
+> 🔍 **DevTools middleware:** `create()` çağrısını `devtools(...)` ile
+> sarmalamak, store'u tarayıcıdaki **Redux DevTools** eklentisine
+> bağlar. `set`'e üçüncü parametre olarak verilen string (`"addItem"`,
+> `"removeItem"`, `"clear"`) DevTools'ta o an hangi action'ın
+> tetiklendiğini gösterir — Redux'taki action type'a karşılık gelir.
+> `{ name: "CartStore" }` ise DevTools panelinde birden fazla store
+> varken hangisine baktığını ayırt etmeni sağlar. Eklenti kurulu
+> değilse middleware sessizce no-op çalışır, hata fırlatmaz. Bu
+> repodaki gerçek store da (`store/useCartStore.ts`) bu şekilde
+> yapılandırılmış durumda.
 
 Provider yok — `_app.tsx`'te hiçbir şey sarmalamana gerek yok. Hook'u
 doğrudan ihtiyaç duyulan component'te import edip kullanıyorsun:
