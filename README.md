@@ -38,6 +38,8 @@ npm run start
 | Layout Pattern 1 (global)                                            | (her sayfa)                | `pages/_app.tsx`                                                         |
 | Layout Pattern 2 (per-page `getLayout`)                              | `/dashboard`               | `pages/dashboard.tsx`, `components/DashboardLayout.tsx`, `types/page.ts` |
 | Layout Pattern 3 (nested layouts)                                    | `/layouts-demo`            | `pages/layouts-demo.tsx`, `components/MainLayout.tsx`                    |
+| Custom Hook (`useLocalStorage`)                                      | `/hooks-demo`              | `hooks/useLocalStorage.ts`, `pages/hooks-demo.tsx`                       |
+| Global state: Zustand vs Context API                                 | `/state-demo`              | `store/useCartStore.ts`, `contexts/CartContext.tsx`, `pages/state-demo.tsx` — bkz. `ZUSTAND-VS-CONTEXT-API.md` |
 | `next/dynamic` (basic/loading/ssr:false/named export/code-splitting) | `/dynamic-imports`         | `pages/dynamic-imports.tsx`                                              |
 | Error Boundary (client render hatası)                                | `/error-boundary-demo`     | `pages/error-boundary-demo.tsx`, `components/ErrorBoundary.tsx`          |
 | `next/image`                                                         | `/performance`             | `pages/performance.tsx`                                                  |
@@ -1354,6 +1356,48 @@ export default function Page() {
   );
 }
 ```
+
+---
+
+### 6. Custom Hooks
+
+State ve side-effect mantığını component'ler arasında paylaşmak için `hooks/`
+klasöründe `use` prefix'li fonksiyonlar tanımlanır. Pages Router'da bu
+component'lerin hem server'da (ilk render) hem client'ta çalıştığını
+unutma — `window`/`localStorage` gibi browser API'lerine sadece
+`useEffect` içinde eriş, yoksa build/SSR sırasında hata alırsın.
+
+```typescript
+// hooks/useLocalStorage.ts
+import { useEffect, useState } from 'react';
+
+export default function useLocalStorage<T>(key: string, initialValue: T) {
+	const [value, setValue] = useState<T>(initialValue);
+
+	// localStorage server'da yok; gerçek değer sadece client'ta,
+	// mount olduktan sonra okunur (hydration mismatch olmasın diye)
+	useEffect(() => {
+		const stored = window.localStorage.getItem(key);
+		if (stored !== null) setValue(JSON.parse(stored) as T);
+	}, [key]);
+
+	const setStoredValue = (next: T | ((prev: T) => T)) => {
+		setValue((prev) => {
+			const resolved = next instanceof Function ? next(prev) : next;
+			window.localStorage.setItem(key, JSON.stringify(resolved));
+			return resolved;
+		});
+	};
+
+	return [value, setStoredValue] as const;
+}
+
+// Kullanım
+const [count, setCount] = useLocalStorage('count', 0);
+```
+
+Bu repodaki canlı örnek: `/hooks-demo` (bkz. yukarıdaki
+[Case → Dosya eşlemesi](#case--dosya-eşlemesi) tablosu).
 
 ---
 

@@ -8,6 +8,8 @@ const LINKS: { href: string; label: string }[] = [
 	{ href: '/dashboard', label: 'Dashboard (SSR)' },
 	{ href: '/users', label: 'Users (gerçek API)' },
 	{ href: '/layouts-demo', label: 'Layouts' },
+	{ href: '/hooks-demo', label: 'Custom Hook' },
+	{ href: '/state-demo', label: 'Zustand vs Context' },
 	{ href: '/dynamic-imports', label: 'Dynamic Import' },
 	{ href: '/error-boundary-demo', label: 'Error Boundary' },
 	{ href: '/error-page-demo', label: '_error.tsx' },
