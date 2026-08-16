@@ -48,7 +48,7 @@ npm run start
 | `Link` & `useRouter`                                                 | `/navigation`              | `pages/navigation.tsx`                                                   |
 | API Routes (basit + method kontrolü)                                 | `/api/hello`               | `pages/api/hello.ts`                                                     |
 | API Routes (dynamic)                                                 | `/api/users/[id]`          | `pages/api/users/[id].ts`                                                |
-| API Routes (gerçek dış API'den veri çekme)                           | `/users`, `/api/users`     | `pages/users/index.tsx`, `pages/api/users/index.ts`                     |
+| API Routes (gerçek dış API'den veri çekme)                           | `/users`, `/api/users`     | `pages/users/index.tsx`, `pages/api/users/index.ts`                      |
 
 ## Notlar
 
@@ -810,51 +810,6 @@ const DynamicComponent = dynamic(
 );
 ```
 
-**Bu örnek, remote shell eklemeden tekli uygulama içinde kod bölme yapmayı gösterir.**
-
-`ssr: false` ile shell sayfası remote'a bakmadan HTML üretir. Checkout (port 3001) kapalı olsa bile `/checkout/step1` 200 döner; hata sadece checkout parçasında (Error Boundary) kalır.
-
-`ssr: true` olsaydı Node, SSR sırasında `import("checkout/...")` yapardı. Remote down / yavaş / timeout → **host sayfası 500**. Micro-frontend'in amacı (remote düşse host ayakta kalsın) bozulur.
-
-`nextjs-mf` SSR'ye hazırdır (`_document` + `ssr/remoteEntry.js`). `ssr: false` "MF SSR yapamaz" demek değil; **izolasyon** için o yolu kullanmıyoruz.
-
-#### 2) Eager shared hatasını önlemek
-
-```
-Shared module is not available for eager consumption
-```
-
-`shared` (React, Zustand) host ve remote arasında **tek kopya**dır. Webpack varsayılanı: paylaşılan paket **async** çözülür — önce `remoteEntry.js` (container) init olur, sonra React/Zustand hazır sayılır.
-
-|           | Anlamı                                                          |
-| --------- | --------------------------------------------------------------- |
-| **Eager** | Uygulama ayağa kalkarken paket **hemen, senkron** istenir       |
-| **Async** | Önce `remoteEntry` yüklenir, **sonra** paylaşılan paket çözülür |
-
-Statik import (`import X from "checkout/X"`) container hazır olmadan shared'ı **eager** ister → bu hata.
-
-`dynamic` + `ssr: false` federated import'u (ve onun shared bağımlılıklarını) senkron/eager değil, container hazır olduktan sonra **async** ister.
-
-> `dynamic` tek başına async sınırdır. `ssr: true` olsa bile statik import kullanmayın; eager shared yine açılır. `ssr: false` ek olarak host'u remote sağlığına kilitlemez.
-
-#### `ssr: true` ne zaman?
-
-Federated içerik **ilk boyada / SEO'da** şartsa:
-
-- Marketing, ürün listesi, blog — Google'ın HTML'de görmesi gereken şey
-- Above-the-fold — loading spinner kabul edilemez
-- Remote'un ayakta olduğu garanti (aynı cluster, timeout, health check)
-- `_document` + `ssr/remoteEntry` oturmuş, hydration test edilmiş
-
-Checkout / dashboard widget'ında SEO yok; izolasyon öncelikli → `ssr: false`.
-
-|                | `ssr: false`            | `ssr: true`                        |
-| -------------- | ----------------------- | ---------------------------------- |
-| HTML'de remote | Yok (önce loading)      | Var                                |
-| Remote down    | Host ayakta             | Host SSR patlayabilir              |
-| Eager shared   | Önlenir (`dynamic` ile) | `dynamic` olduğu sürece yine async |
-| İhtiyaç        | İzolasyon               | SEO / ilk boya                     |
-
 ---
 
 ## 🚀 Performance & Optimization
@@ -1080,7 +1035,7 @@ Bu projede iki katman var; birbirinin yerine geçmez:
 | `_error.tsx`   | Sayfa / SSR / `getServerSideProps` patladı | Yok (Next.js default yeter; optional) |
 | Error Boundary | Client'ta child render hatası patladı      | `ErrorBoundary`                       |
 
-Sayfa/SSR hataları `_error.tsx` ile ele alınırken, client render hataları Error Boundary ile yakalanır. Bu demo standalone olduğu için remote/federated hata senaryosu yoktur.
+Sayfa/SSR hataları `_error.tsx` ile ele alınırken, client render hataları Error Boundary ile yakalanır.
 
 ### Error Boundary Pattern
 
